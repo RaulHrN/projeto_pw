@@ -37,3 +37,8 @@ td,th{
 .negativo{
     background-color: rgb(255, 151, 125);
 }
+
+.trTotalGeral{
+    background-color: rgb(0, 0, 0);
+    color: #fff;
+}

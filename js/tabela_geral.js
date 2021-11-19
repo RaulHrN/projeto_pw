@@ -68,10 +68,10 @@ function exibirTabela(fii_table, fii_user) {
 
     saidaDados += `
     <tr class="trTotalGeral">
-        <td>Total Geral</td>
+        <td colspan="4">Total Geral</td>
         <td>R$ ${proventoTotal.toFixed(2)}</td>
-        <td>${cotasTotal}</td>
         <td> - </td>
+        <td>${cotasTotal}</td>
         <td>R$ ${investTotal.toFixed(2)}</td>
         <td> - </td>
         <td> - </td>
