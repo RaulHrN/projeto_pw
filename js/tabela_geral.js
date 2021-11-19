@@ -1,46 +1,83 @@
 let fii_user = [];
 let fii_table = [];
 
-async function carregarDadosUser(url){
+async function carregarDadosUser(url) {
     await fetch(url)
-            .then(resp => resp.json())
-            .then(json => fii_user = json);
+        .then(resp => resp.json())
+        .then(json => fii_user = json);
     carregarDadosFundos();
 }
 
-async function carregarDadosFundos(){
-    /*fazer aqui uma repetição no vetor fii_user, para cada FII,
-    obter seu nome e montar a url no fetch conforme exemplo abaixo
+async function carregarDadosFundos() {
 
-    for (.......){
-        let json = await fetch(`https://api-simple-flask.herokuapp.com/api/${NOME DO FII}`)
-                        .then(resp => resp.json());
-    
-        após a linha acima, adicionar o json retornado no vetor fii_table, pode utilizar 
-        o método push.
+    for (let FII of fii_user) {
+        let json = await fetch(`https://api-simple-flask.herokuapp.com/api/${FII.nome}`)
+            .then(resp => resp.json());
 
-        fii_table.push(json);  
+        fii_table.push(json);
     }
-    */    
 
-    exibirTabela();
+    if (fii_table.length > 0) {
+        document.querySelector("#loading").style.display = "none";
+    }
+
+    exibirTabela(fii_table, fii_user);
 }
 
 carregarDadosUser("json/fii.json");
 
-function exibirTabela(){ 
-    /* Implemente aqui os cálculos solicitados no PDF,
-    os cálculos devem ter como base, uma repetição no vetor fii_user
-    e para cada fundo, consulte suas demais informações no vetor fii_table
+function exibirTabela(fii_table, fii_user) {
 
-    DICA para procurar um fundo do vetor fii_user no vetor fii_table
-    let dados_fii = fii_table.find( (item) => item.fundo.indexOf(fii.nome.toUpperCase()) >= 0);
+    let saidaDados = "";
+    let dadosfiiUser = [];
+    let proventoTotal = 0;
+    let cotasTotal = 0;
+    let investTotal = 0;
 
-    Dentro da repetição, após os cálculos, monte a linha na tabela com o comando
+    for (let i = 0; i < fii_user.length; i++) {
+        dadosfiiUser.push(fii_table.find((item) => item.fundo.indexOf(fii_user[i].nome.toUpperCase()) >= 0));
+    }
 
-    document.querySelector("table").innerHTML += variável
+    for (let i = 0; i < dadosfiiUser.length; i++) {
+        proventoTotal += dadosfiiUser[i].pvp;
+        cotasTotal += fii_user[i].qtde;
+        investTotal += fii_user[i].totalgasto;
 
-    Note que o cabeçalho da tabela já está pronto no HTML.
-    Fora do for, adicione na tabela a linha final de total conforme exemplo no PDF.
-    */
+        let rendimento = ((dadosfiiUser[i].pvp * 100) / dadosfiiUser[i].minMes).toFixed(2);
+
+        let classeDados = (rendimento < 0.6) ? "negativo" : "positivo";
+
+        saidaDados += `
+            <tr class=${classeDados}>
+                <td>${dadosfiiUser[i].fundo}</td>
+                <td>${dadosfiiUser[i].setor}</td>
+                <td>${dadosfiiUser[i].proximoRendimento.dataBase == "-" ? dadosfiiUser[i].ultimoRendimento.dataBase : dadosfiiUser[i].proximoRendimento.dataBase}</td>
+                <td>${dadosfiiUser[i].proximoRendimento.dataPag == "-" ? dadosfiiUser[i].ultimoRendimento.dataPag : dadosfiiUser[i].proximoRendimento.dataPag}</td>
+                <td>R$ ${dadosfiiUser[i].pvp}</td>
+                <td>R$ ${dadosfiiUser[i].minMes}</td>
+                <td>${fii_user[i].qtde}</td>
+                <td>R$ ${fii_user[i].totalgasto}</td>
+                <td>R$${(fii_user[i].totalgasto / fii_user[i].qtde).toFixed(2)}</td>
+                <td>${rendimento} % </td>
+                <td>${dadosfiiUser[i].dividendYield} % </td>
+                <td>R$ ${dadosfiiUser[i].rendimentoMedio24M.toFixed(2)} </td>
+            </tr>
+        `;
+
+    }
+
+    saidaDados += `
+    <tr class="trTotalGeral">
+        <td>Total Geral</td>
+        <td>R$ ${proventoTotal.toFixed(2)}</td>
+        <td>${cotasTotal}</td>
+        <td> - </td>
+        <td>R$ ${investTotal.toFixed(2)}</td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+    </tr>`;
+
+    document.querySelector("#saidaTabela").innerHTML += saidaDados;
 }
